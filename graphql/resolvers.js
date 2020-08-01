@@ -38,6 +38,7 @@ module.exports = {
     const createdUser = await user.save();
     return { ...createdUser._doc, _id: createdUser._id.toString() };
   },
+
   login: async function({ email, password }) {
     const user = await User.findOne({ email: email });
     if (!user) {
@@ -86,7 +87,7 @@ module.exports = {
       error.code = 422;
       throw error;
     }
-    const user = await User.findById(req.userId);
+    const user = await User.findOne({ email: postInput.email});
     if (!user) {
       const error = new Error('Invalid user.');
       error.code = 401;
@@ -108,7 +109,7 @@ module.exports = {
       updatedAt: createdPost.updatedAt.toISOString()
     };
   },
-  posts: async function({ page }, req) {
+  posts: async function({ page, limit = 0 }, req) {
     if (!req.isAuth) {
       const error = new Error('Not authenticated!');
       error.code = 401;
@@ -117,7 +118,7 @@ module.exports = {
     if (!page) {
       page = 1;
     }
-    const perPage = 2;
+    const perPage = limit;
     const totalPosts = await Post.find().countDocuments();
     const posts = await Post.find()
       .sort({ createdAt: -1 })
